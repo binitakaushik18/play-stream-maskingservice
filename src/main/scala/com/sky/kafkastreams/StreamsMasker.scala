@@ -5,7 +5,7 @@ import java.util
 import java.util.{Properties, UUID}
 
 import com.ovoenergy.kafka.serialization.circe.circeJsonDeserializer
-import entities.{MaskedPlayEntity, PlayEntity}
+import entities.{MaskedPlayVodJsonMessage, PlayVodJsonMessage}
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.streams.kstream.{Consumed, KStream, Produced, ValueMapper}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig, Topology}
@@ -20,9 +20,10 @@ import org.apache.kafka.streams.processor.LogAndSkipOnInvalidTimestamp
 object StreamsMasker extends App {
 
   private val playTopic ="play-topic"
-  implicit val playSerde = Serdes.serdeFrom(circeJsonSerializer[PlayEntity],circeJsonDeserializer[PlayEntity])
+  private val maskedTopic = "masked-play-topic"
+  implicit val playSerde = Serdes.serdeFrom(circeJsonSerializer[PlayVodJsonMessage],circeJsonDeserializer[PlayVodJsonMessage])
   implicit val nullSerde = Serdes.serdeFrom(nullSerializer[Unit],nullDeserializer[Unit])
-  implicit val maskedSerde = Serdes.serdeFrom(circeJsonSerializer[MaskedPlayEntity],circeJsonDeserializer[MaskedPlayEntity])
+  implicit val maskedSerde = Serdes.serdeFrom(circeJsonSerializer[MaskedPlayVodJsonMessage],circeJsonDeserializer[MaskedPlayVodJsonMessage])
 
   val props: Properties = {
     val p = new Properties()
@@ -33,15 +34,15 @@ object StreamsMasker extends App {
       p
   }
 
-  lazy val maskPII: ValueMapper[PlayEntity, MaskedPlayEntity]=
-    (playEntity: PlayEntity) => MaskedPlayEntity(playEntity.copy())
+  lazy val maskPII: ValueMapper[PlayVodJsonMessage, MaskedPlayVodJsonMessage]=
+    (playVodJsonMessage: PlayVodJsonMessage) => MaskedPlayVodJsonMessage(playVodJsonMessage.copy())
 
   val builder = new StreamsBuilder
 
   builder.stream(playTopic, Consumed.`with`(nullSerde, playSerde))
       .peek((k,v) => {println(s"DEBUG: ${v.contentId}, ${v.contentId}")})
-      .mapValues[MaskedPlayEntity](maskPII)
-      .through("masked-play-topic", Produced.`with`(nullSerde,maskedSerde))
+      .mapValues[MaskedPlayVodJsonMessage](maskPII)
+      .through(maskedTopic, Produced.`with`(nullSerde,maskedSerde))
 
 
   val kafkaStreams = new KafkaStreams(builder.build(),props)

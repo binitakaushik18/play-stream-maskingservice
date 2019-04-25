@@ -6,20 +6,20 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer, StringSerializer}
 import com.ovoenergy.kafka.serialization.circe.{circeJsonDeserializer, _}
-import entities.PlayEntity
+
 
 
 class CirceTest extends FlatSpec{
 
-  it should "serialize deserialize play entity json " in {
-
-    val json = PlayEntity(deviceId="259849307543",
-      contentId = "A438985").asJson
-
-
+//  it should "serialize deserialize play entity json " in {
+//
+//    val json = PlayEntity(deviceId="259849307543",
+//      contentId = "A438985").asJson
 
 
-  }
+
+
+//  }
 
 
 
