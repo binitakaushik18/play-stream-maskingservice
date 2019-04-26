@@ -5,7 +5,7 @@ import java.util.{Properties, UUID}
 
 import com.ovoenergy.kafka.serialization.circe.{circeJsonDeserializer, _}
 import com.ovoenergy.kafka.serialization.core.{nullDeserializer, nullSerializer}
-import entities.{MaskedPlayVodJsonMessage, PlayVodJsonMessage}
+import entities.{MaskedPlayMessage, PlayJsonMessage}
 import io.circe.generic.auto._
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization._
@@ -17,9 +17,9 @@ object StreamsMasker extends App {
   private val playTopic ="play-topic"
   private val maskedTopic = "masked-play-topic"
 
-  implicit val playSerde = Serdes.serdeFrom(circeJsonSerializer[PlayVodJsonMessage],circeJsonDeserializer[PlayVodJsonMessage])
+  implicit val playSerde = Serdes.serdeFrom(circeJsonSerializer[PlayJsonMessage],circeJsonDeserializer[PlayJsonMessage])
   implicit val nullSerde = Serdes.serdeFrom(nullSerializer[Unit],nullDeserializer[Unit])
-  implicit val maskedSerde = Serdes.serdeFrom(circeJsonSerializer[MaskedPlayVodJsonMessage],circeJsonDeserializer[MaskedPlayVodJsonMessage])
+  implicit val maskedSerde = Serdes.serdeFrom(circeJsonSerializer[MaskedPlayMessage],circeJsonDeserializer[MaskedPlayMessage])
 
 
   val props: Properties = {
@@ -31,14 +31,14 @@ object StreamsMasker extends App {
       p
   }
 
-  lazy val maskPII: ValueMapper[PlayVodJsonMessage, MaskedPlayVodJsonMessage]=
-    (playVodJsonMessage: PlayVodJsonMessage) => MaskedPlayVodJsonMessage(playVodJsonMessage.copy())
+  lazy val maskPII: ValueMapper[PlayJsonMessage, MaskedPlayMessage]=
+    (playVodJsonMessage: PlayJsonMessage) => MaskedPlayMessage(playVodJsonMessage.copy())
 
   val builder = new StreamsBuilder
 
   builder.stream(playTopic, Consumed.`with`(nullSerde, playSerde))
       .peek((k,v) => {println(s"DEBUG: ${v.contentId}, ${v.contentId}")})
-      .mapValues[MaskedPlayVodJsonMessage](maskPII)
+      .mapValues[MaskedPlayMessage](maskPII)
       .through(maskedTopic, Produced.`with`(nullSerde,maskedSerde))
 
 
