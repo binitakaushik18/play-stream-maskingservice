@@ -1,13 +1,15 @@
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.{Base64, UUID}
 
 import io.circe.Json
+import io.netty.handler.codec.string.StringEncoder
+import io.netty.util.CharsetUtil
 
 package object entities {
 
 
 
-  case class MaskedPlayVodJsonMessage(timestamp: String,
+  case class MaskedPlayVodJsonMessage(activityTimestamp: String,
                               streamingTicket: String,
                               contentId: String,
                               deviceId: String,
@@ -18,7 +20,7 @@ package object entities {
                               personaId: Option[String] = None)
 
 
-  case class PlayVodJsonMessage(timestamp: String,
+  case class PlayVodJsonMessage(activityTimestamp : String,
                                 streamingTicket: String,
                                 contentId: String,
                                 deviceId: String,
@@ -53,14 +55,14 @@ package object entities {
     def apply(playMessage: PlayVodJsonMessage): MaskedPlayVodJsonMessage = {
 
        MaskedPlayVodJsonMessage(
-        timestamp = playMessage.timestamp,
+        activityTimestamp = playMessage.activityTimestamp,
         streamingTicket = playMessage.streamingTicket,
-        deviceId = playMessage.deviceId.hashCode.toString,
+        deviceId = Base64.getEncoder.encodeToString(playMessage.deviceId.getBytes(CharsetUtil.UTF_8)),
         contentId = playMessage.contentId,
         proposition = playMessage.proposition,
         provider = playMessage.provider,
         providerTerritory = playMessage.providerTerritory,
-        householdId = playMessage.householdId.hashCode.toString,
+        householdId = Base64.getEncoder.encodeToString(playMessage.householdId.getBytes(CharsetUtil.UTF_8)),
         personaId = playMessage.personaId)
 
 

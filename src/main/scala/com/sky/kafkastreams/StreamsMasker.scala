@@ -25,6 +25,7 @@ object StreamsMasker extends App {
   implicit val nullSerde = Serdes.serdeFrom(nullSerializer[Unit],nullDeserializer[Unit])
   implicit val maskedSerde = Serdes.serdeFrom(circeJsonSerializer[MaskedPlayVodJsonMessage],circeJsonDeserializer[MaskedPlayVodJsonMessage])
 
+
   val props: Properties = {
     val p = new Properties()
 
@@ -39,6 +40,7 @@ object StreamsMasker extends App {
 
   val builder = new StreamsBuilder
 
+  println("building streams")
   builder.stream(playTopic, Consumed.`with`(nullSerde, playSerde))
       .peek((k,v) => {println(s"DEBUG: ${v.contentId}, ${v.contentId}")})
       .mapValues[MaskedPlayVodJsonMessage](maskPII)
