@@ -26,7 +26,6 @@ libraryDependencies ++= Seq(
   "com.ovoenergy" %% "kafka-serialization-core" % ovoVersion,
   "com.ovoenergy" %% "kafka-serialization-circe" % ovoVersion,
   "com.ovoenergy" %% "kafka-serialization-avro4s" % ovoVersion,
-
   "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 )
