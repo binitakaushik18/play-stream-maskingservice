@@ -1,12 +1,12 @@
-name := "kafka-streams-example"
+name := "play-masking-streams"
 
 version := "0.1"
 
 scalaVersion := "2.12.6"
-private val confluentVersion = "4.0.0"
-private val ovoVersion = "0.3.10"
-private val circeVersion = "0.9.2"
-private val kafkastreams = "2.0.0"
+val confluentVersion = "4.0.0"
+val ovoVersion = "0.3.10"
+val circeVersion = "0.9.2"
+val kafkastreams = "2.0.0"
 
 libraryDependencies ++= Seq(
 
@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   "com.ovoenergy" %% "kafka-serialization-core" % ovoVersion,
   "com.ovoenergy" %% "kafka-serialization-circe" % ovoVersion,
   "com.ovoenergy" %% "kafka-serialization-avro4s" % ovoVersion,
+
   "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 )

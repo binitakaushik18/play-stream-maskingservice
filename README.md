@@ -1,4 +1,4 @@
-# Play messages streaming App
+# Play messages Streaming App
 
 This kafka streams application written in Scala reads from Kafka topic `play-topic` and masks the PII (personally identifiable information) before 
 writing to a new topic `masked-play-topic`. This was created so that production data can be masked and used for stage or nft environment.
@@ -38,12 +38,12 @@ Acceptable play-topic looks like:
 
 Once the stream job is run it will write to `masked-play-topic`.
 
-How to run
+### How to run
 1. Go to docker-compose folder and run `docker-compose up -d` to start kafka and zookeeper
 2. Install confluent-kafka from https://www.confluent.io/download/.  
 3. Go to ${confluent-bin} to create the topics by
     ``./kafka-topics --create --topic play-topic --bootstrap-server localhost:9092 --partitions 2 --replication-factor 1``
-   (masked-play-topic will be created when the streaming app is run)
+    ``./kafka-topics --create --topic masked-play-topic --bootstrap-server localhost:9092 --partitions 2 --replication-factor 1``
 4. Produce json messages to `play-topic` by 
    ``/kafka-console-producer --broker-list localhost:9092 --topic play-topic``
    Sample json message can be found above 
