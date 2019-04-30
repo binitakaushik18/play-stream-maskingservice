@@ -14,14 +14,21 @@ import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 
 object StreamsMasker extends App {
 
-  private val playTopic = "play-topic"
-  private val maskedTopic = "masked-play-topic"
+  private val sourceTopic = "play-topic"
+  private val destinationTopic = "masked-play-topic"
 
+  // functions
+  lazy val maskPII: ValueMapper[PlayJsonMessage, MaskedPlayMessage] =
+    (playVodJsonMessage: PlayJsonMessage) => MaskedPlayMessage(playVodJsonMessage.copy())
+
+
+  // setting up serializers and deserializers for kafka events
   val playSerde = Serdes.serdeFrom(circeJsonSerializer[PlayJsonMessage], circeJsonDeserializer[PlayJsonMessage])
   val nullSerde = Serdes.serdeFrom(nullSerializer[Unit], nullDeserializer[Unit])
   val maskedSerde = Serdes.serdeFrom(circeJsonSerializer[MaskedPlayMessage], circeJsonDeserializer[MaskedPlayMessage])
 
 
+  // setup kafka streams config
   val props: Properties = {
     val p = new Properties()
 
@@ -30,15 +37,13 @@ object StreamsMasker extends App {
     p
   }
 
-  lazy val maskPII: ValueMapper[PlayJsonMessage, MaskedPlayMessage] =
-    (playVodJsonMessage: PlayJsonMessage) => MaskedPlayMessage(playVodJsonMessage.copy())
-
   val builder = new StreamsBuilder
 
-  builder.stream(playTopic, Consumed.`with`(nullSerde, playSerde))
+  // define stream processing logic
+  builder.stream(sourceTopic, Consumed.`with`(nullSerde, playSerde))
     .peek((k, v) => println(s"DEBUG: DeviceId : ${v.deviceId}, houseHoldId : ${v.householdId}"))
     .mapValues[MaskedPlayMessage](maskPII)
-    .through(maskedTopic, Produced.`with`(nullSerde, maskedSerde))
+    .through(destinationTopic, Produced.`with`(nullSerde, maskedSerde))
 
 
   val kafkaStreams = new KafkaStreams(builder.build(), props)
